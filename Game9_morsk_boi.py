@@ -203,3 +203,5 @@ if input('Чтобы загрузить сохранение, введите loa
         StartNewGame()
 else:
     StartNewGame()
+
+#pswork
