@@ -50,7 +50,9 @@ tsatp = {10:'десять',
       19:'девятнадцать'}
 
 a1 = {'один':1,
+      'одна':1,
       'два':2,
+      'две':2,
       'три':3,
       'четыре':4,
       'пять':5,
@@ -70,6 +72,16 @@ a2 = {'двадцать':2,
       'девяносто':9
      }
 
+a3 = {'сто':1,
+      'двести':2,
+      'триста':3,
+      'четыреста':4,
+      'пятьсот':5,
+      'шестьсот':6,
+      'семьсот':7,
+      'восемьсот':8,
+      'девятьсот':9}
+
 tsat = {'десять':10,
       'одиннадцать':11,
       'двенадцать':12,
@@ -85,7 +97,10 @@ tsat = {'десять':10,
 lenfrac = {
     1:'десятых',
     2:'сотых',
-    3:'тысячных'
+    3:'тысячных',
+    4:'десятитысячных',
+    5:'стотысячных',
+    6:'миллионных'
 }
 
 def ToNum(numst):
@@ -100,17 +115,21 @@ def ToNum(numst):
             return(a1[numst])
         elif numst in tsat:
             return(tsat[numst])
+        elif numst in a2:
+            return(a2[numst])
+        elif numst in a3:
+            return(a3[numst])
 
 def PrintNumb(s):
     if s == '':
         return ''
+    s = round(float(s), 3)
     s = str(s)
     p = []
     fr = ''
     lenfr = 0
     if '.' in s:
         s, fr = s.split('.')
-        print(s, fr)
         lenfr = len(fr)
         fr = fr.replace('0', '')
     if len(s) >= 1:  
@@ -138,22 +157,28 @@ def WordCalculator(line):
         newline = line.replace('плюс', '+')
         action = '+'
     elif 'минус' in line:
-        newline = line.replace('минус', '-')
+        newline = line.replace(' минус', '-')
         action = '-'
-    else:
-        newline = line.replace('умножить', '*')
+    elif 'умножить' in line:
+        newline = line.replace(' умножить на ', '*')
         action = '*'
+    elif 'разделить на' in line:
+        newline = line.replace(' разделить на ', '/')
+        action = '/'
+    elif ' остаток от деления на ' in line:
+        newline = line.replace(' остаток от деления на ', '%')
+        action = '%'
     a, b = '', ''
     if '+' in newline:
-        a = newline[0:newline.index('+')-1]
-        b = newline[newline.index('+')+2:]
+        a, b = newline.split('+')
     elif '-' in newline:
-        a = newline[0:newline.index('-')-1]
-        b = newline[newline.index('-')+2:]
-    else:
-        a = newline[0:newline.index('*')-1]
-        b = newline[newline.index('*')+2:]
-
+        a, b = newline.split('-')
+    elif '*' in newline:
+        a, b = newline.split('*')
+    elif '/' in newline:
+        a, b = newline.split('/')
+    elif '%' in newline:
+        a, b = newline.split('%')
     a, b = ToNum(a), ToNum(b)
     if action == '+':
         return(PrintNumb(a + b))
@@ -161,10 +186,17 @@ def WordCalculator(line):
         return(PrintNumb(a - b))
     elif action == '*':
         return(PrintNumb(a * b))
+    elif action == '/':
+        return(PrintNumb(a / b))
+    elif action == '%':
+        return(PrintNumb(a % b))
 
 def Fraction(line):
     if ' тысячных' in line:
         newline = line.replace(' тысячных', '')
+        return round(0.001 * ToNum(newline), 3)
+    elif ' тысячная' in line:
+        newline = line.replace(' тысячная', '')
         return round(0.001 * ToNum(newline), 3)
     elif ' сотых' in line:
         newline = line.replace(' сотых', '')
@@ -173,4 +205,4 @@ def Fraction(line):
         newline = line.replace(' десятых', '')
         return round(0.1 * ToNum(newline), 3)
 
-print(WordCalculator('два и шесть сотых умножить пять'))
+print(WordCalculator('одна шестая умножить на две третьих'))
