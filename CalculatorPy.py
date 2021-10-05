@@ -8,7 +8,12 @@ ap1 = {1:'один',
       8:'восемь',
       9:'девять',
       0:''}
-     
+
+ap1t = {
+    1:'одна',
+    2:'две',
+}
+
 ap2 = {2:'двадцать',
       3:'тридцать',
       4:'сорок',
@@ -29,7 +34,7 @@ ap3 = {1:'сто',
       9:'девятьсот'}
 
 ap4 = {1:'одна тысяча',
-    2:'два тысячи',
+    2:'две тысячи',
     3:'три тысячи',
     4:'четрые тысячи',
     5:'пять тысяч',
@@ -103,8 +108,61 @@ lenfrac = {
     6:'миллионных'
 }
 
+ops = {
+  '+': (1,lambda a, b: a + b),
+  '-': (1,lambda a, b: a - b),
+  '*': (2,lambda a, b: a * b),
+  '/': (2,lambda a, b: a / b),
+  '%': (2,lambda a, b: a % b),
+  '(': 0,
+  ')': 0
+}
+
+def RPNtoNumber(tokens):
+  stack = []
+  for token in tokens:
+    if token in ops:
+      arg2 = stack.pop()
+      arg1 = stack.pop()
+      result = ops[token][1](arg1, arg2)
+      stack.append(result)
+    else:
+      stack.append(float(token))
+  return stack.pop()
+
+def IsNumber(token):
+    try:
+        token = float(token)
+        return True
+    except:
+        return False
+
+def ToRPN(tokens):
+    operators = ["+","-","*","/"]
+    stack = []
+    op1, op2 = '', ''
+    result = []
+    for token in tokens:
+        if token in operators:
+            while stack and stack[-1] != '(' and stack[-1] in operators and ops[token][0] <= ops[stack[-1]][0]:
+                result.append(stack.pop())
+            stack.append(token)
+        elif token == ')':
+            while stack:
+                x = stack.pop()
+                if x == '(':
+                    break
+                result.append(x)
+        elif token == "(":
+                stack.append(token)
+        else:
+            result.append(token)
+    while stack:
+        result.append(stack.pop())
+    return result
+
 def ToNum(numst):
-    print(numst)
+    print('numst:', numst)
     if ' и ' in numst:
         wholep, fractp = numst.split(' и ')
         return ToNum(wholep) + Fraction(fractp)
@@ -125,7 +183,6 @@ def ToNum(numst):
             return(a3[numst])
 
 def CheckFracPeriod(numfr):
-    # numfr = f'{numfr:.11f}'
     print(numfr)
     for i in range(4, len(numfr)):
         if numfr[i] == numfr[i-1] == numfr[i-2] == numfr[i-3] == numfr[i-4] and numfr[i] != '0':
@@ -138,6 +195,7 @@ def CheckFracPeriod(numfr):
             return [f'{numfr[i]-3}{numfr[i-2]}{numfr[i-1]}{numfr[i]}', i-11]
 
 def PrintNumb(s):
+    print(s)
     if s == '':
         return ''
     print(s)
@@ -176,13 +234,14 @@ def PrintNumb(s):
         else:
             if int(s[-1]) > 0:
                 p.append(ap1[int(s[-1])])
-            else:
+            elif len(s) < 4:
                 p.append('ноль')
         if len(s) >= 3 and int(s[-3]) != 0:
             p.append(ap3[int(s[-3])])
-        if len(s) >= 4 and int(s[-4]) != 0:
+        if len(s) == 4 and int(s[-4]) != 0:
             p.append(ap4[int(s[-4])])
-        if len(s) == 5 or len(s) == 6:
+        print('s:',s)
+        if len(s) >= 5:
             if int(s[-4]) == 1 and int(s[-5]) != 1:
                 p.append('тысяча')
             elif int(s[-4]) == 2 and int(s[-5]) != 1:
@@ -190,67 +249,73 @@ def PrintNumb(s):
             elif int(s[-4]) == 3 and int(s[-5]) != 1:
                 p.append('тысячи')
             elif int(s[-4]) == 4 and int(s[-5]) != 1:
-                p.append('тысячти')
+                p.append('тысячи')
             else:
                 p.append('тысяч')
-        
             num5 = int(s[-5:-3])
             print('num5', num5)
-            if 9 < num5 < 20:
+            if num5 < 3:
+                p.append(ap1t[num5])
+            elif num5 < 10:
+                p.append(ap1[num5])
+            elif 9 < num5 < 20:
                 p.append(tsatp[num5])
             elif num5 > 19:
                 p.append(ap1[int(s[-4])])
                 p.append(ap2[int(s[-5])])
             if len(s) == 6 and s[-6] != '0':
                 p.append(ap3[int(s[-6])])
+    print('p:',p)
+    for i in range(len(p)-2, 0, -1):
+        if p[i] == 'тысячи' or p[i] == 'тысяч' or p[i] == 'тысяча':
+            if p[i+1] == 'два':
+                p[i+1] = 'две'
+            elif p[i+1] == 'один':
+                p[i+1] = 'одна'
     if fr == '':
         return(' '.join(p[::-1]))
     elif frperiod == True:
-        if lenfr != 0:
-            return(' '.join(p[::-1]) + ' и ' + PrintNumb(beforper) + lenfrac[lenfr] + ' и ' + PrintNumb(per) + ' в периоде')
-        else:
-            return(' '.join(p[::-1]) + ' и ' + PrintNumb(per) + ' в периоде')
+        if lenfr != 0 and per[0] != '0':
+            return(' '.join(p[::-1]) + ' и ' + PrintNumb(beforper) + ' ' + lenfrac[lenfr] + ' и ' + PrintNumb(per) + ' в периоде').replace('  ', ' ')
+        elif lenfr != 0 and per[0] == '0':
+            return(' '.join(p[::-1]) + ' и ' + PrintNumb(beforper) + ' ' + lenfrac[lenfr] + ' и ноль ' + PrintNumb(per) + ' в периоде').replace('  ', ' ')
+        elif per[0] != '0':
+            return(' '.join(p[::-1]) + ' и ' + PrintNumb(per) + ' в периоде').replace('  ', ' ')
+        elif per[0] == '0':
+            return(' '.join(p[::-1]) + ' и ноль ' + PrintNumb(per) + ' в периоде').replace('  ', ' ')
     else:
         return(' '.join(p[::-1]) + ' и ' + PrintNumb(fr) + ' ' + lenfrac[lenfr])
 
 def WordCalculator(line):
     if 'плюс' in line:
-        newline = line.replace('плюс', '+')
-        action = '+'
-    elif 'минус' in line:
-        newline = line.replace(' минус', '-')
-        action = '-'
-    elif 'умножить' in line:
-        newline = line.replace(' умножить на ', '*')
-        action = '*'
-    elif 'разделить на' in line:
-        newline = line.replace(' разделить на ', '/')
-        action = '/'
-    elif ' остаток от деления на ' in line:
-        newline = line.replace(' остаток от деления на ', '%')
-        action = '%'
-    a, b = '', ''
-    if '+' in newline:
-        a, b = newline.split('+')
-    elif '-' in newline:
-        a, b = newline.split('-')
-    elif '*' in newline:
-        a, b = newline.split('*')
-    elif '/' in newline:
-        a, b = newline.split('/')
-    elif '%' in newline:
-        a, b = newline.split('%')
-    a, b = ToNum(a), ToNum(b)
-    if action == '+':
-        return(PrintNumb(a + b))
-    elif action == '-':
-        return(PrintNumb(a - b))
-    elif action == '*':
-        return(PrintNumb(a * b))
-    elif action == '/':
-        return(PrintNumb(a / b))
-    elif action == '%':
-        return(PrintNumb(a % b))
+        line = line.replace('плюс', '+')
+    if 'минус' in line:
+        line = line.replace('минус', '-')
+    if 'умножить' in line:
+        line = line.replace('умножить на', '*')
+    if 'разделить на' in line:
+        line = line.replace('разделить на', '/')
+    if 'остаток от деления на' in line:
+        line = line.replace('остаток от деления на', '%')
+    if 'скобка открывается' in line:
+        line = line.replace('скобка открывается', '(')
+    if 'скобка закрывается' in line:
+        line = line.replace('скобка закрывается', ')')
+    newline = ''
+    number = ''
+    print('line:', line)
+    for sym in line:
+        if sym in ops:
+            if number != '' and number != ' ':
+                newline = newline + f'{ToNum(number.strip())}'
+            number = ''
+            newline = newline + ' ' + sym + ' '
+        else:
+            number = number + sym
+    if number != '' and number != ' ':
+        newline = newline + f'{ToNum(number.strip())}'
+    print(newline)
+    return(PrintNumb(RPNtoNumber(ToRPN(newline.split()))))
 
 def Fraction(line):
     if ' миллионных' in line:
@@ -275,5 +340,5 @@ def Fraction(line):
         newline = line.replace(' десятых', '')
         return round(0.1 * ToNum(newline), 6)
 
-print(WordCalculator('девятнадцать и восемьдесят две сотых разделить на девяносто девять'))
-# print(PrintNumb())
+print(WordCalculator('девятнадцать и восемьдесят две сотых разделить на скобка открывается девяносто девять минус один скобка закрывается'))
+# print(PrintNumb(222123))
