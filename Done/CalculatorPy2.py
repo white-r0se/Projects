@@ -119,16 +119,16 @@ ops = {
 }
 
 def RPNtoNumber(tokens):
-    stack = []
-    for token in tokens:
-        if token in ops:
-            arg2 = stack.pop()
-            arg1 = stack.pop()
-            result = ops[token][1](arg1, arg2)
-            stack.append(result)
-        else:
-            stack.append(float(token))
-    return stack.pop()
+  stack = []
+  for token in tokens:
+    if token in ops:
+      arg2 = stack.pop()
+      arg1 = stack.pop()
+      result = ops[token][1](arg1, arg2)
+      stack.append(result)
+    else:
+      stack.append(float(token))
+  return stack.pop()
 
 def IsNumber(token):
     try:
@@ -341,4 +341,4 @@ def Fraction(line):
         return round(0.1 * ToNum(newline), 6)
 
 print(WordCalculator('девятнадцать и восемьдесят две сотых разделить на скобка открывается девяносто девять минус один скобка закрывается'))
-
+# print(PrintNumb(222123))
