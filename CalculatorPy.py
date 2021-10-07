@@ -341,4 +341,4 @@ def Fraction(line):
         return round(0.1 * ToNum(newline), 6)
 
 print(WordCalculator('девятнадцать и восемьдесят две сотых разделить на скобка открывается девяносто девять минус один скобка закрывается'))
-
+#comment
