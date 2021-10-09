@@ -162,7 +162,6 @@ def ToRPN(tokens):
     return result
 
 def ToNum(numst):
-    print('numst:', numst)
     if ' и ' in numst:
         wholep, fractp = numst.split(' и ')
         return ToNum(wholep) + Fraction(fractp)
@@ -183,7 +182,6 @@ def ToNum(numst):
             return(a3[numst])
 
 def CheckFracPeriod(numfr):
-    print(numfr)
     for i in range(4, len(numfr)):
         if numfr[i] == numfr[i-1] == numfr[i-2] == numfr[i-3] == numfr[i-4] and numfr[i] != '0':
             return [numfr[i], i-4]
@@ -195,10 +193,8 @@ def CheckFracPeriod(numfr):
             return [f'{numfr[i]-3}{numfr[i-2]}{numfr[i-1]}{numfr[i]}', i-11]
 
 def PrintNumb(s):
-    print(s)
     if s == '':
         return ''
-    print(s)
     if s == int(s):
         s = int(s)
     s = str(s)
@@ -219,7 +215,6 @@ def PrintNumb(s):
             s = round(float(s), 6)
             s = str(s)
             s, fr = s.split('.')
-            print('New f:', fr)
             lenfr = len(fr)
             fr = list(fr)
             while fr[len(fr)-1] == 0:
@@ -240,7 +235,6 @@ def PrintNumb(s):
             p.append(ap3[int(s[-3])])
         if len(s) == 4 and int(s[-4]) != 0:
             p.append(ap4[int(s[-4])])
-        print('s:',s)
         if len(s) >= 5:
             if int(s[-4]) == 1 and int(s[-5]) != 1:
                 p.append('тысяча')
@@ -253,7 +247,6 @@ def PrintNumb(s):
             else:
                 p.append('тысяч')
             num5 = int(s[-5:-3])
-            print('num5', num5)
             if num5 < 3:
                 p.append(ap1t[num5])
             elif num5 < 10:
@@ -265,7 +258,6 @@ def PrintNumb(s):
                 p.append(ap2[int(s[-5])])
             if len(s) == 6 and s[-6] != '0':
                 p.append(ap3[int(s[-6])])
-    print('p:',p)
     for i in range(len(p)-2, 0, -1):
         if p[i] == 'тысячи' or p[i] == 'тысяч' or p[i] == 'тысяча':
             if p[i+1] == 'два':
@@ -274,7 +266,7 @@ def PrintNumb(s):
                 p[i+1] = 'одна'
     if fr == '':
         return(' '.join(p[::-1]))
-    elif frperiod == True:
+    elif frperiod:
         if lenfr != 0 and per[0] != '0':
             return(' '.join(p[::-1]) + ' и ' + PrintNumb(beforper) + ' ' + lenfrac[lenfr] + ' и ' + PrintNumb(per) + ' в периоде').replace('  ', ' ')
         elif lenfr != 0 and per[0] == '0':
@@ -303,7 +295,6 @@ def WordCalculator(line):
         line = line.replace('скобка закрывается', ')')
     newline = ''
     number = ''
-    print('line:', line)
     for sym in line:
         if sym in ops:
             if number != '' and number != ' ':
@@ -314,7 +305,6 @@ def WordCalculator(line):
             number = number + sym
     if number != '' and number != ' ':
         newline = newline + f'{ToNum(number.strip())}'
-    print(newline)
     return(PrintNumb(RPNtoNumber(ToRPN(newline.split()))))
 
 def Fraction(line):
@@ -340,5 +330,5 @@ def Fraction(line):
         newline = line.replace(' десятых', '')
         return round(0.1 * ToNum(newline), 6)
 
+
 print(WordCalculator('девятнадцать и восемьдесят две сотых разделить на скобка открывается девяносто девять минус один скобка закрывается'))
-#comment
