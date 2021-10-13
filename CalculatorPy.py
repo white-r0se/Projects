@@ -140,7 +140,6 @@ def IsNumber(token):
 def ToRPN(tokens):
     operators = ["+","-","*","/"]
     stack = []
-    op1, op2 = '', ''
     result = []
     for token in tokens:
         if token in operators:
@@ -331,4 +330,5 @@ def Fraction(line):
         return round(0.1 * ToNum(newline), 6)
 
 
-print(WordCalculator('девятнадцать и восемьдесят две сотых разделить на скобка открывается девяносто девять минус один скобка закрывается'))
+# print(WordCalculator('девятнадцать и восемьдесят две сотых разделить на скобка открывается девяносто девять минус один скобка закрывается'))
+print(WordCalculator('сто девять плюс один'))
