@@ -220,6 +220,11 @@ def PrintNumb(s):
                 del fr[len(fr-1)]
             fr = ''.join(fr)
     if len(s) >= 1:  
+        if s != '0':
+            s = list(s)
+            while s[0] == '0':
+                del s[0]
+            s = ''.join(s)
         if 9 < int(s[-2:]) < 20:
             p.append(tsatp[int(s[-2:])])
         elif int(s[-2:]) > 19:
@@ -330,5 +335,7 @@ def Fraction(line):
         return round(0.1 * ToNum(newline), 6)
 
 
-# print(WordCalculator('девятнадцать и восемьдесят две сотых разделить на скобка открывается девяносто девять минус один скобка закрывается'))
-print(WordCalculator('сто девять плюс один'))
+print(WordCalculator('девятнадцать и восемьдесят две миллионных разделить на скобка открывается девяносто девять минус один скобка закрывается'))
+print(WordCalculator('девять и пять миллионных плюс один'))
+print(WordCalculator('девятнадцать и восемьдесят две сотых разделить на девяносто девять'))
+
