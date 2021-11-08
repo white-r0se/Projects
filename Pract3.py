@@ -189,12 +189,18 @@ class Table:
         self.arr[0][index] = SetType(value, self.dict_num[index])
 
 class TableCSV(Table):
-    def load_table(self, file):
-        reader = csv.reader(file, delimiter=';')
-        tablelist = list(reader)
-        self.arr = tablelist[1:]
-        for i in range(len(tablelist[0])):
-            self.head[i] = tablelist[0][i]
+    def load_table(self, *files):
+        reader = []
+        for i in files:
+            reader.append(csv.reader(i, delimiter=';'))
+        tablelists = []
+        for i in range(len(reader)):
+            tablelists.append(list(reader[i]))
+        self.arr = []
+        for i in range(len(tablelists)):
+            self.arr += tablelists[i][1:]
+        for i in range(len(tablelists[0][0])):
+            self.head[i] = tablelists[0][0][i]
 
     def save_table(self, name='Table.csv'):
         with open(name, 'w', newline='') as newfile:
@@ -286,3 +292,11 @@ print('\n')
 tabtxt.set_values([16, 27, 80], column='Name')
 tabtxt.set_value(18, column='Age')
 tabtxt.print_table()
+print('\n')
+f1 = open('file1.csv', 'r')
+f2 = open('file2.csv', 'r')
+tab1_2 = TableCSV()
+tab1_2.load_table(f1, f2)
+f1.close()
+f2.close()
+tab1_2.print_table()
