@@ -202,18 +202,56 @@ class TableCSV(Table):
         for i in range(len(tablelists[0][0])):
             self.head[i] = tablelists[0][0][i]
 
-    def save_table(self, name='Table.csv'):
-        with open(name, 'w', newline='') as newfile:
-            writer = csv.writer(newfile, delimiter=';')
-            writer.writerows(self.transform_to_object())
-
+    def save_table(self, name='Table.csv', maxrows=None):
+        if maxrows == None:
+            with open(name, 'w', newline='') as newfile:
+                writer = csv.writer(newfile, delimiter=';')
+                writer.writerows(self.transform_to_object())
+        else:
+            if GetType(maxrows) != 'int':
+                raise ValueError('max_rows должен быть int!')
+            object_table = self.transform_to_object()
+            head_table = object_table.pop(0)
+            index = 0
+            while True:
+                newname = name.replace('.csv', f'{index}.csv')
+                with open(newname, 'w', newline='') as newfile:
+                    writer = csv.writer(newfile, delimiter=';')
+                    writer.writerow(head_table)
+                    for i in range(maxrows):
+                        if object_table != []:
+                            writer.writerow(object_table.pop(0))
+                if object_table == []:
+                    break
+                index += 1
+            
 class TablePickle(Table):
-    def save_table(self, name='Table.pickle'):
-        with open(name, 'wb') as newfile:
-            pickle.dump((self.head, self.arr), newfile)
-
-    def load_table(self, file):
-        self.head, self.arr = pickle.load(file)
+    def save_table(self, name='Table.pickle', maxrows=None):
+        if maxrows == None:
+            with open(name, 'wb') as newfile:
+                pickle.dump((self.head, self.arr), newfile)
+        else:
+            if GetType(maxrows) != 'int':
+                raise ValueError('max_rows должен быть int!')
+            index = 0
+            while True:
+                newname = name.replace('.pickle', f'{index}.pickle')
+                with open(newname, 'wb') as newfile:
+                    arr = []
+                    for i in range(maxrows):
+                        if self.arr != []:
+                            arr.append(self.arr.pop(0))
+                    pickle.dump((self.head, arr), newfile)
+                if self.arr == []:
+                    break
+                index += 1
+                            
+    def load_table(self, *files):
+        self.head, self.arr = pickle.load(files[0])
+        for i in range(len(files)-1):
+            head, arr = pickle.load(files[i+1])
+            self.arr += arr
+            
 
 class TableTXT(Table):
     def save_table(self, name='Table.txt'):
@@ -286,13 +324,16 @@ print(tabtxt.get_column_types(by_number=False))
 tabtxt.set_column_types({'Name':'bool'}, by_number=False)
 print(tabtxt.get_column_types(by_number=True))
 print('\n')
+print('test .getvalue(s)')
 print(tabtxt.get_values('Age'))
 print(tabtxt.get_value('City'))
 print('\n')
+print('test set_value(s)')
 tabtxt.set_values([16, 27, 80], column='Name')
 tabtxt.set_value(18, column='Age')
 tabtxt.print_table()
 print('\n')
+print('test load_table form 2 files')
 f1 = open('file1.csv', 'r')
 f2 = open('file2.csv', 'r')
 tab1_2 = TableCSV()
@@ -300,3 +341,10 @@ tab1_2.load_table(f1, f2)
 f1.close()
 f2.close()
 tab1_2.print_table()
+tab1_2.save_table('Table_limit.csv', maxrows=3)
+print('\n')
+print('test save_table')
+tab3.save_table('Table_limit.pickle', maxrows=2)
+tab4 = TablePickle()
+tab4.load_table(open('Table_limit0.pickle', 'rb'), open('Table_limit1.pickle', 'rb'))
+tab4.print_table()
