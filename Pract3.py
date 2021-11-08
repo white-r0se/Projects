@@ -1,16 +1,47 @@
-from os import SEEK_SET
 import pickle
 import csv
 import copy
+
+def GetType(x):
+    try:
+        newx = int(x)
+        if str(newx) == x:
+            return 'int'
+        elif newx == x:
+            return 'int'
+    except ValueError:
+        pass
+    try:
+        newx = float(x)
+        return 'float'
+    except ValueError:
+        pass
+    if x == 'True' or x == 'False':
+        return 'bool'
+    return 'str'
+
+def SetType(x, type):
+    if type == 'bool':
+        return bool(x)
+    elif type == 'int':
+        return int(x)
+    elif type == 'float':
+        return float(x)
+    elif type == 'str':
+        return str(x)
 
 class Table:
     def __init__(self, object=None, rows=0, columns=0) -> None:
         if object == None:
             self.head = {i:'' for i in range(columns)}
             self.arr = [['' for i in range(columns)] for j in range(rows)]
+            self.dict_num = {}
+            self.dict_name = {}
         else:
             self.head = {i:object[0][i] for i in range(len(object[0]))}
             self.arr = [[object[j][i] for i in range(len(object[j]))] for j in range(1, len(object))]
+            self.dict_num = {}
+            self.dict_name = {}
     
     def print_table(self):
         for i in range(len(self.head)):
@@ -36,14 +67,110 @@ class Table:
             newtable.arr = copy.deepcopy(self.arr[start:stop])
             return newtable
 
-    def get_rows_by_index(val1, … , copy_table=False): 
-            '''получение новой таблицы
-        из одной строки или из строк со значениями в первом столбце,
-        совпадающими с переданными аргументами val1, … , valN. Функция либо
-        копирует исходные данные, либо создает новое представление таблицы,
-        работающее с исходным набором данных (copy_table=False), таким образом
-        изменения, внесенные через это представления будут наблюдаться и в
-        исходной таблице.'''
+    def get_rows_by_index(self, *values, copy_table=False): 
+        if copy_table == True:
+            newtable = self
+            rows = []
+            for i in values:
+                for j in self.arr:
+                    if i in j:
+                        rows.append(j)
+                        break
+            newtable.arr = rows
+            return newtable
+        else:
+            newtable = copy.deepcopy(self)
+            rows = []
+            for i in values:
+                for j in self.arr:
+                    if i in j:
+                        rows.append(copy.deepcopy(j))
+                        break
+            newtable.arr = rows
+            return newtable
+
+    def get_column_types(self, by_number=True):
+        if by_number == True and self.dict_num != {}:
+            return self.dict_num
+        elif by_number == False and self.dict_name != {}:
+            return self.dict_name
+        d = {}
+        for i in range(len(self.head)):
+            if by_number == True:
+                ind = i
+            else:
+                ind = self.head[i]
+            d[ind] = GetType(self.arr[0][i])
+        return d
+    
+    def set_column_types(self, types_dict, by_number=True):
+        self.dict_num = self.get_column_types(by_number=True)
+        self.dict_name = self.get_column_types(by_number=False)
+        if by_number == True:
+            c = 0
+            for i in self.dict_num:
+                self.dict_num[i] = types_dict.pop(c)
+                c += 1
+            c = 0
+            for i in self.dict_name:
+                self.dict_name[i] = self.dict_num[c]
+                c += 1
+        else:
+            c = 0
+            copy_types_dict = copy.deepcopy(types_dict)
+            for i in types_dict:
+                self.dict_name[i] = copy_types_dict.pop(i)
+                self.dict_num[c] = self.dict_name[i]
+                c += 1
+        
+    def get_values(self, column=0):
+        self.dict_num = self.get_column_types(by_number=True)
+        self.dict_name = self.get_column_types(by_number=False)
+        arr = []
+        if GetType(column) == 'int':
+            for i in self.arr:
+                arr.append(SetType(i[column], self.dict_num[column]))
+        else:
+            if not(column in self.dict_name):
+                raise IndexError('Столбец с таким именем не найден!')
+            c = 0
+            for i in self.dict_name:
+                if column == i:
+                    break
+                c += 1
+            for i in self.arr:
+                arr.append(SetType(i[c], self.dict_name[column]))
+        return arr
+            
+    def get_value(self, column=0):
+        return self.get_values(column)[0]
+
+    def set_values(self, values, column=0):
+        if GetType(column) == 'int':
+            index = column
+        else:
+            if not(column in self.dict_name):
+                raise IndexError('Столбец с таким именем не найден!')
+            index = 0
+            for i in self.dict_name:
+                if column == i:
+                    break
+                index += 1
+        for i in range(len(self.arr)):
+            self.arr[i][index] = SetType(values[i], self.dict_num[index])
+        
+    def set_value(self, value, column=0):
+        if GetType(column) == 'int':
+            index = column
+        else:
+            if not(column in self.dict_name):
+                raise IndexError('Столбец с таким именем не найден!')
+            index = 0
+            for i in self.dict_name:
+                if column == i:
+                    break
+                index += 1
+        self.arr[0][index] = SetType(value, self.dict_num[index])
 
 class TableCSV(Table):
     def load_table(self, file):
@@ -123,6 +250,23 @@ print('COPY tabtxt.....')
 copytable = tabtxt.get_rows_by_number(0, 2, copy_table=False)
 copytable.arr[1][1] = '27' 
 copytable.print_table()
-print('')
+print('--')
 tabtxt.print_table()
-
+print('\n')
+print('COPY tabtxt by index.....')
+copy2table = tabtxt.get_rows_by_index('Alexey', 'Al Pacino', copy_table=False)
+copy2table.print_table()
+copy2table.arr[1][1] = 82
+print('--')
+tabtxt.print_table()
+print('\n')
+print(tabtxt.get_column_types(by_number=False))
+tabtxt.set_column_types({'Name':'bool'}, by_number=False)
+print(tabtxt.get_column_types(by_number=True))
+print('\n')
+print(tabtxt.get_values('Age'))
+print(tabtxt.get_value('City'))
+print('\n')
+tabtxt.set_values([16, 27, 80], column='Name')
+tabtxt.set_value(18, column='Age')
+tabtxt.print_table()
