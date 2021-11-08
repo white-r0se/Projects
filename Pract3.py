@@ -56,6 +56,8 @@ class Table:
         return [list(self.head.values())] + self.arr
 
     def get_rows_by_number(self, start, stop=None, copy_table=False):
+        if start < 0 or start > len(self.arr) or stop < 0 or stop > len(self.arr):
+            raise IndexError('Неправильный интервал строк!')
         if stop == None:
             stop = start + 1
         if copy_table == True:
@@ -73,9 +75,11 @@ class Table:
             rows = []
             for i in values:
                 for j in self.arr:
-                    if i in j:
+                    if i == j[0]:
                         rows.append(j)
                         break
+                    if j == self.arr[-1]:
+                        raise ValueError('Неправильное значение!')
             newtable.arr = rows
             return newtable
         else:
@@ -83,13 +87,17 @@ class Table:
             rows = []
             for i in values:
                 for j in self.arr:
-                    if i in j:
+                    if i == j[0]:
                         rows.append(copy.deepcopy(j))
                         break
+                    if j == self.arr[-1]:
+                        raise ValueError('Неправильное значение!')
             newtable.arr = rows
             return newtable
 
     def get_column_types(self, by_number=True):
+        if by_number != True and by_number != False:
+            raise TypeError('by_number принимает только True и False!')
         if by_number == True and self.dict_num != {}:
             return self.dict_num
         elif by_number == False and self.dict_name != {}:
@@ -104,6 +112,8 @@ class Table:
         return d
     
     def set_column_types(self, types_dict, by_number=True):
+        if by_number != True and by_number != False:
+            raise TypeError('by_number принимает только True и False!')
         self.dict_num = self.get_column_types(by_number=True)
         self.dict_name = self.get_column_types(by_number=False)
         if by_number == True:
@@ -128,6 +138,8 @@ class Table:
         self.dict_name = self.get_column_types(by_number=False)
         arr = []
         if GetType(column) == 'int':
+            if column < 0 or column > len(self.dict_num)-1:
+                raise ValueError('Неправильный номер столбца!')
             for i in self.arr:
                 arr.append(SetType(i[column], self.dict_num[column]))
         else:
@@ -147,6 +159,8 @@ class Table:
 
     def set_values(self, values, column=0):
         if GetType(column) == 'int':
+            if column < 0 or column > len(self.dict_num)-1:
+                raise ValueError('Неправильный номер столбца!')
             index = column
         else:
             if not(column in self.dict_name):
@@ -161,6 +175,8 @@ class Table:
         
     def set_value(self, value, column=0):
         if GetType(column) == 'int':
+            if column < 0 or column > len(self.dict_num)-1:
+                raise ValueError('Неправильный номер столбца!')
             index = column
         else:
             if not(column in self.dict_name):
