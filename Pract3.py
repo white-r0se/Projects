@@ -1,6 +1,7 @@
 import pickle
 import csv
 import copy
+import datetime
 
 def GetType(x):
     try:
@@ -18,6 +19,33 @@ def GetType(x):
         pass
     if x == 'True' or x == 'False':
         return 'bool'
+    if '-' in x and not(':' in x):
+        try:
+            newx = datetime.date(*map(int, x.split('-')))
+            return 'datatime'
+        except TypeError:
+            pass
+    if ':' in x and not('-' in x):
+        try:
+            newx = datetime.time(*map(int, x.split(':')))
+            return 'datatime'
+        except TypeError:
+            pass
+    if '-' in x and ':' in x:
+        try:
+            arr = []
+            date, time = x.split()
+            arr += list(map(int, date.split('-')))
+            arr += list(time.split(':'))
+            for i in range(3, len(arr)):
+                if i == 6:
+                    arr[i] = float(arr[i])
+                else:
+                    arr[i] = int(i)
+            newx = datetime.datetime(*arr)
+            return 'datatime'
+        except TypeError:
+            pass
     return 'str'
 
 def SetType(x, type):
@@ -29,6 +57,22 @@ def SetType(x, type):
         return float(x)
     elif type == 'str':
         return str(x)
+    elif type == 'datetime':
+        if '-' in x and not(':' in x):
+            return datetime.date(*map(int, x.split('-')))
+    if ':' in x and not('-' in x):
+        return datetime.time(*map(int, x.split(':')))
+    if '-' in x and ':' in x:
+        arr = []
+        date, time = x.split()
+        arr += list(map(int, date.split('-')))
+        arr += list(time.split(':'))
+        for i in range(3, len(arr)):
+            if i == 6:
+                arr[i] = float(arr[i])
+            else:
+                arr[i] = int(i)
+        return datetime.datetime(*arr)
 
 class Table:
     def __init__(self, object=None, rows=0, columns=0) -> None:
@@ -98,10 +142,6 @@ class Table:
     def get_column_types(self, by_number=True):
         if by_number != True and by_number != False:
             raise TypeError('by_number принимает только True и False!')
-        if by_number == True and self.dict_num != {}:
-            return self.dict_num
-        elif by_number == False and self.dict_name != {}:
-            return self.dict_name
         d = {}
         for i in range(len(self.head)):
             if by_number == True:
@@ -109,6 +149,12 @@ class Table:
             else:
                 ind = self.head[i]
             d[ind] = GetType(self.arr[0][i])
+            for j in range(len(self.arr)):
+                if GetType(self.arr[j][i]) != d[ind]:
+                    if (self.arr[j][i] == 'int' and d[ind] == 'float') or (self.arr[j][i] == 'float' and d[ind] == 'int'):
+                        d[ind] = 'float'
+                    else:
+                        d[ind] = 'str' 
         return d
     
     def set_column_types(self, types_dict, by_number=True):
@@ -163,6 +209,8 @@ class Table:
                 raise ValueError('Неправильный номер столбца!')
             index = column
         else:
+            self.dict_name = self.get_column_types(by_number=False)
+            self.dict_num = self.get_column_types(by_number=True)
             if not(column in self.dict_name):
                 raise IndexError('Столбец с таким именем не найден!')
             index = 0
@@ -206,8 +254,65 @@ class Table:
             newtab2.arr.pop(0)
         return (newtab1, newtab2)
 
+    def add(self, column1, column2, result_column):
+        for i in [column1, column2, result_column]:
+            if GetType(i) != 'int' or i < 0 or i > len(self.arr):
+                raise IndexError('Неправильный номер строки!')
+        type1, type2 = self.get_column_types()[column1], self.get_column_types()[column2]
+        if type1 == 'str' or type2 == 'str' or type1 == 'datetime' or type2 == 'datetime':
+            for i in range(len(self.arr)):
+                self.arr[i][result_column] = str(self.arr[i][column1]) + str(self.arr[i][column2])
+        else:
+            for i in range(len(self.arr)):
+                self.arr[i][result_column] = self.arr[i][column1] + self.arr[i][column2]
+
+    def sub(self, column1, column2, result_column):
+        for i in [column1, column2, result_column]:
+            if GetType(i) != 'int' or i < 0 or i > len(self.arr):
+                raise IndexError('Неправильный номер строки!')
+        type1, type2 = self.get_column_types()[column1], self.get_column_types()[column2]
+        if type1 == 'str' or type2 == 'str' or type1 == 'datetime' or type2 == 'datetime':
+            for i in range(len(self.arr)):
+                if str(self.arr[i][column2]) in str(self.arr[i][column1]):
+                    self.arr[i][result_column] = str(self.arr[i][column1]).replace(str(self.arr[i][column2]), '')
+                else:
+                    raise TypeError('Ошибка вычитания str столбцов!')
+        else:
+            for i in range(len(self.arr)):
+                self.arr[i][result_column] = self.arr[i][column1] - self.arr[i][column2]            
+
+    def mul(self, column1, column2, result_column):
+        for i in [column1, column2, result_column]:
+            if GetType(i) != 'int' or i < 0 or i > len(self.arr):
+                raise IndexError('Неправильный номер строки!')
+        type1, type2 = self.get_column_types()[column1], self.get_column_types()[column2]
+        if type1 == 'str' or type2 == 'str':
+            raise TypeError('Нельзя использовать str столбцы!')
+        elif  type1 == 'datetime' or type2 == 'datetime':
+            raise TypeError('Нельзя использовать datetime столбцы!')
+        else:
+            for i in range(len(self.arr)):
+                self.arr[i][result_column] = SetType(self.arr[i][column1], type1) * SetType(self.arr[i][column2], type2)
+
+    def div(self, column1, column2, result_column):
+        for i in [column1, column2, result_column]:
+            if GetType(i) != 'int' or i < 0 or i > len(self.arr):
+                raise IndexError('Неправильный номер строки!')
+        type1, type2 = self.get_column_types()[column1], self.get_column_types()[column2]
+        if type1 == 'str' or type2 == 'str':
+            raise TypeError('Нельзя использовать str столбцы!')
+        elif  type1 == 'datetime' or type2 == 'datetime':
+            raise TypeError('Нельзя использовать datetime столбцы!')
+        else:
+            for i in range(len(self.arr)):
+                self.arr[i][result_column] = SetType(self.arr[i][column1], type1) / SetType(self.arr[i][column2], type2)  
+
+    def detect_type(self):
+        self.dict_num = self.get_column_types(by_number=True)
+        self.dict_name = self.get_column_types(by_number=False)
+
 class TableCSV(Table):
-    def load_table(self, *files):
+    def load_table(self, *files, auto_detect_type=False):
         reader = []
         for i in files:
             reader.append(csv.reader(i, delimiter=';'))
@@ -219,6 +324,8 @@ class TableCSV(Table):
             self.arr += tablelists[i][1:]
         for i in range(len(tablelists[0][0])):
             self.head[i] = tablelists[0][0][i]
+        if auto_detect_type:
+            self.detect_type()
 
     def save_table(self, name='Table.csv', maxrows=None):
         if maxrows == None:
@@ -264,11 +371,13 @@ class TablePickle(Table):
                     break
                 index += 1
                             
-    def load_table(self, *files):
+    def load_table(self, *files, auto_detect_type=False):
         self.head, self.arr = pickle.load(files[0])
         for i in range(len(files)-1):
             head, arr = pickle.load(files[i+1])
             self.arr += arr
+        if auto_detect_type:
+            self.detect_type()
             
 
 class TableTXT(Table):
@@ -280,7 +389,7 @@ class TableTXT(Table):
             for i in self.arr:
                 print(';'.join(i), file=newfile)
 
-    def load_table(self, file):
+    def load_table(self, file, auto_detect_type=False):
         elem, fordict = file.readline().split()
         fordict = fordict.split(';')
         for i in range(int(elem)):
@@ -288,6 +397,8 @@ class TableTXT(Table):
         lines = [line.rstrip() for line in file]
         for i in range(len(lines)):
             self.arr.append(list(lines[i].split(';')))
+        if auto_detect_type:
+            self.detect_type()
 
 
 with open('file1.csv', 'r') as File1:
@@ -379,3 +490,24 @@ tab4_5_1, tab4_5_2 = tab4_5.split(2)
 tab4_5_1.print_table()
 print()
 tab4_5_2.print_table()
+print('\n')
+print('test add.....')
+tab4_5_2.add(0, 1, 2)
+tab4_5_2.print_table()
+print()
+print('test sub.....')
+tab4_5_2.sub(2, 1, 2)
+tab4_5_2.print_table()
+print()
+tab4_5_2.set_values([100, 200, 300], column='Name')
+tab4_5_2.print_table()
+tab4_5_2.div(0, 1, 2)
+tab4_5_2.print_table()
+print('\n')
+print('test datetime....')
+d = datetime.date(2005, 6, 30)
+t = datetime.time(10, 20, 5)
+dt = datetime.datetime(2000, 12, 12, 3, 3, 1, 1)
+tab4_5_2.set_values([d, t, dt], column=2)
+tab4_5_2.print_table()
+print(tab4_5_2.get_column_types(by_number=False))
