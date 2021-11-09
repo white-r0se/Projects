@@ -15,12 +15,22 @@ def CramerRule(A, b):
     return x
 
 
+# A = np.array([
+#     [1, 2, 3],
+#     [1, 4, 9],
+#     [1, 8, 27]
+# ])
+# b = np.array([
+#     [4, 16, 46]
+# ]).reshape((3, 1))
+# print(CramerRule(A, b))
+
 A = np.array([
-    [1, 2, 3],
-    [1, 4, 9],
-    [1, 8, 27]
+    [6, 7, 6],
+    [4, 8, 4],
+    [4, 4, 3]
 ])
 b = np.array([
-    [4, 16, 46]
+    [315, 280, 194]
 ]).reshape((3, 1))
 print(CramerRule(A, b))
