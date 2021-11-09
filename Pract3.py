@@ -188,6 +188,24 @@ class Table:
                 index += 1
         self.arr[0][index] = SetType(value, self.dict_num[index])
 
+    def concat(table1, table2):
+        if table1.head != table2.head:
+            raise Exception('У таблиц разные столбцы!')
+        newtab = Table(table1.transform_to_object())
+        newtab.arr += table2.arr
+        return newtab
+    
+    def split(self, row_number):
+        if GetType(row_number) != 'int' or row_number < 0 or row_number > len(self.arr):
+            raise IndexError('Неправильный номер строки!')
+        newtab1 = Table(self.transform_to_object())
+        newtab2 = Table(self.transform_to_object())
+        while len(newtab1.arr) > row_number:
+            newtab1.arr.pop(-1)
+        for i in range(row_number):
+            newtab2.arr.pop(0)
+        return (newtab1, newtab2)
+
 class TableCSV(Table):
     def load_table(self, *files):
         reader = []
@@ -324,16 +342,16 @@ print(tabtxt.get_column_types(by_number=False))
 tabtxt.set_column_types({'Name':'bool'}, by_number=False)
 print(tabtxt.get_column_types(by_number=True))
 print('\n')
-print('test .getvalue(s)')
+print('test .getvalue(s).....')
 print(tabtxt.get_values('Age'))
 print(tabtxt.get_value('City'))
 print('\n')
-print('test set_value(s)')
+print('test set_value(s).....')
 tabtxt.set_values([16, 27, 80], column='Name')
 tabtxt.set_value(18, column='Age')
 tabtxt.print_table()
 print('\n')
-print('test load_table form 2 files')
+print('test load_table form 2 files.....')
 f1 = open('file1.csv', 'r')
 f2 = open('file2.csv', 'r')
 tab1_2 = TableCSV()
@@ -343,8 +361,21 @@ f2.close()
 tab1_2.print_table()
 tab1_2.save_table('Table_limit.csv', maxrows=3)
 print('\n')
-print('test save_table')
+print('test save_table.....')
 tab3.save_table('Table_limit.pickle', maxrows=2)
 tab4 = TablePickle()
 tab4.load_table(open('Table_limit0.pickle', 'rb'), open('Table_limit1.pickle', 'rb'))
 tab4.print_table()
+print('\n')
+tab5 = TableCSV()
+file3 = open('file3.csv', 'r')
+tab5.load_table(file3)
+tab4_5 = Table.concat(tab4, tab5)
+print('test concat.....')
+tab4_5.print_table()
+print('\n')
+print('test split.....')
+tab4_5_1, tab4_5_2 = tab4_5.split(2)
+tab4_5_1.print_table()
+print()
+tab4_5_2.print_table()
