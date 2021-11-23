@@ -29,6 +29,7 @@ class field:
             self.arr[6][i] = 'p'
         self.player1_not = {'K':False, 'R':[False, False]}
         self.player2_not = {'K':False, 'R':[False, False]}
+        self.record = []
 
     def draw(self):
         print('   A B C D E F G H')
@@ -317,24 +318,33 @@ class field:
                 self.knight(find, x, y, spec_x, spec_y)
 
     def play(self, player=1, countmoves=0):
-
+        print('Для сохранение введите save, для выхода exit')
         while True:
             global moved
             moved = False
             line = input(f'Ход {player} игрока:')
             if line == 'exit':
                 break
+            if line == 'save':
+                with open('chess_local_save.txt', 'w') as newfile:
+                    for i in range(len(self.record)):
+                        print(f'{i+1}. {self.record[i][0]} {self.record[i][1]}', file=newfile)
+                break
             self.input_move(line, player)
             if moved == True:
                 countmoves += 1
                 if player == 1:
                     player = 2
+                    self.record.append([line, None])
                 else:
                     player = 1
+                    if self.record != []:
+                        self.record[-1][1] = line
             self.draw()
             if self.check_win():
                 print('Число ходов:', int(countmoves/2+0.5))
                 break
+            print(self.record)
     
     def check_win(self):
         player1win, player2win = True, True
@@ -375,9 +385,11 @@ class field:
                     if player == 1:
                         self.input_move(move1, player)
                         player = 2
+                        self.record.append([move1, None])
                     else:
                         self.input_move(move2, player)
                         player = 1
+                        self.record[-1][1] = move2
                 elif fullform == True:
                     if player == 1:
                         self.fullformat_input(move1, player)
@@ -411,8 +423,15 @@ class field:
                 print(f'Ход №{curmove+1}')
                 if player == 1:
                     player = 2
+                    print('!!!!!!!!!!!!!!!!!!!')
+                    self.record[-1][1] = None
                 else:
+                    print('???????????')
                     player = 1
+                    
+                    print(self.record)
+                    del self.record[-1]
+                    print(self.record)
             elif inp == 'play':
                 self.play(player, c)
                 break
@@ -438,14 +457,11 @@ class field:
 
 f = field()
 
-# f.input_move('e4', 1)
-# f.input_move('g5', 2)
-# f.input_move('d4', 1)
-# f.input_move('f6', 2)
-# f.input_move('Qh5', 1)
-# f.input_move('Kf7', 2)
+# with open('chess_local_save.txt', 'r') as File:
+#     f.readfile(File)
 
-# f.draw()
-# f.play()
 with open('chess_save_fullformat.txt', 'r') as File:
     f.readfile(File, fullform=True)
+
+# with open('chess_save2.txt', 'r') as File:
+#     f.readfile(File)
