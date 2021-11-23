@@ -27,6 +27,8 @@ class field:
         for i in range(8):
             self.arr[1][i] = 'P'
             self.arr[6][i] = 'p'
+        self.player1_not = {'K':False, 'R':[False, False]}
+        self.player2_not = {'K':False, 'R':[False, False]}
 
     def draw(self):
         print('   A B C D E F G H')
@@ -42,11 +44,27 @@ class field:
     def move(self, x1, y1, x2, y2):
         print('[', y1, x1, '] [', y2, x2, ']')
         print(self.arr[y1][x1], '->', self.arr[y2][x2])
+        if self.arr[y2][x2] != '.':
+            if self.arr[y1][x1] == self.arr[y1][x1].lower() and self.arr[y2][x2] == self.arr[y2][x2].lower():
+                return None
+            elif self.arr[y1][x1] == self.arr[y1][x1].upper() and self.arr[y2][x2] == self.arr[y2][x2].upper():
+                return None
         self.arr[y2][x2] = self.arr[y1][x1]
         self.arr[y1][x1] = '.' 
         global moved
         moved = True
-        
+        if (x1 == 4 and y1 == 0):
+            self.player1_not['K'] = True
+        elif (x1 == 4 and y1 == 7):
+            self.player2_not['K'] = True
+        elif (x1 == 0 and y1 == 0):
+            self.player1_not['R'][0] = True
+        elif (x1 == 7 and y1 == 0):
+            self.player1_not['R'][1] == True
+        elif (x1 == 0 and y1 == 7):
+            self.player2_not['R'][0] == True
+        elif (x1 == 7 and y1 == 7):
+            self.player2_not['R'][1] == True        
 
     def find_straight(self, find, x, y, spec_x, spec_y):
         for i in range(x+1, 8):
@@ -180,8 +198,8 @@ class field:
                     self.move(move[1], move[0], x, y)
             except IndexError: pass
         
-    def input_move(self, line, player):
-        spec_x, spec_y = None, None
+    def input_move(self, line, player, spec_x=None, spec_y=None):
+        print(line, player, spec_x, spec_y)
         kill = False
         if '+' in line:
             line = line.replace('+', '')
@@ -189,6 +207,26 @@ class field:
             line = line.replace('x', '')
             kill = True
             print(':::::', line, kill)
+        if '!' in line:
+            line = line.replace('!', '')
+        if line == 'O-O':
+            if player == 1 and self.player1_not['K'] == False and self.player1_not['R'][1] == False and \
+                self.arr[0][5] == '.' and self.arr[0][6] == '.':
+                self.move(4, 0, 6, 0)
+                self.move(7, 0, 5, 0)
+            elif player == 2 and self.player2_not['K'] == False and self.player2_not['R'][1] == False and \
+                self.arr[7][5] == '.' and self.arr[7][6] == '.':
+                self.move(4, 7, 6, 7)
+                self.move(7, 7, 5, 7)
+        if line == 'O-O-O':
+            if player == 1 and self.player1_not['K'] == False and self.player1_not['R'][0] == False and \
+                self.arr[0][2] == '.' and self.arr[0][3] == '.':
+                self.move(4, 0, 2, 0)
+                self.move(0, 0, 3, 0)
+            elif player == 2 and self.player2_not['K'] == False and self.player2_not['R'][0] == False and \
+                self.arr[7][2] == '.' and self.arr[7][3] == '.':
+                self.move(4, 7, 2, 7)
+                self.move(0, 7, 3, 7)
         if len(line) == 3 and line[0].lower() == line[0]:
             if GetType(line[0]) == 'str':
                 spec_x = ord(line[0])-97
@@ -211,6 +249,8 @@ class field:
             if player == 1:
                 if kill == False:
                     if 0 <= y-2 <= 7:
+                        print(y == 3, self.arr[y-2][x] == 'P', (spec_x == None or spec_x == x), (spec_y == None or spec_y == y-2))
+                        print(y, spec_y)
                         if y == 3 and self.arr[y-2][x] == 'P' and (spec_x == None or spec_x == x) and (spec_y == None or spec_y == y-2):
                             self.move(x, y-2, x, y)
                         elif self.arr[y-1][x] == 'P' and (spec_x == None or spec_x == x) and (spec_y == None or spec_y == y-1):
@@ -276,9 +316,8 @@ class field:
                     find = 'n'
                 self.knight(find, x, y, spec_x, spec_y)
 
-    def play(self):
-        player = 1
-        countmoves = 0
+    def play(self, player=1, countmoves=0):
+
         while True:
             global moved
             moved = False
@@ -306,14 +345,16 @@ class field:
                 elif i == 'K':
                     player2win = False
         if player1win:
+            self.draw()
             print('Победа 1 игрока')
             return True
         elif player2win:
+            self.draw()
             print('Победа 2 игрока')
             return True
         return False
 
-    def readfile(self, file):
+    def readfile(self, file, fullform=False):
         lines = file.readlines()
         curmove = 0
         c = 0
@@ -321,32 +362,42 @@ class field:
         cache = []
         cache.append(copy.deepcopy(self.arr))
         self.draw()
-        print(f'Ход №{0}')
+        print(f'Ход №{curmove}')
         while True:
             print('n - движение вперед, p - движение назад, play - начать игру с этого момента, exit - выход')
             inp = input()
             if inp == 'exit':
                 break
             elif inp == 'n':
-                print('!!', curmove)
                 nmove, move1, move2 = lines[curmove].split()
                 print(move1, move2)
-                if player == 1:
-                    f.input_move(move1, player)
-                    player = 2
-                else:
-                    f.input_move(move2, player)
-                    player = 1
+                if fullform == False:
+                    if player == 1:
+                        self.input_move(move1, player)
+                        player = 2
+                    else:
+                        self.input_move(move2, player)
+                        player = 1
+                elif fullform == True:
+                    if player == 1:
+                        self.fullformat_input(move1, player)
+                        player = 2
+                    elif player == 2:
+                        self.fullformat_input(move2, player)
+                        player = 1
                 c += 1
                 self.draw()
                 print('C', c)
-                if c % 2 == 1:
+                print(f'Ход №{curmove+1}')
+                if player == 2:
+                    print(move1)
+                else:
+                    print(move2)
+                if c % 2 == 0:
                     curmove += 1
-                print(f'Ход №{curmove}')
                 cache.append(copy.deepcopy(self.arr))
             elif inp == 'p':
-                
-                if c % 2 == 1:
+                if c % 2 == 0:
                     curmove -= 1
                 c -= 1
                 for i in cache:
@@ -357,19 +408,33 @@ class field:
                 self.arr = copy.deepcopy(cache[c])
                 f.draw()
                 print('C', c)
-                print(f'Ход №{curmove}')
+                print(f'Ход №{curmove+1}')
                 if player == 1:
                     player = 2
                 else:
                     player = 1
+            elif inp == 'play':
+                self.play(player, c)
+                break
 
-
-                
-                
-        
-
-
-
+    def fullformat_input(self, move, player):
+        if '-' in move:
+            left, right = move.split('-')
+            if len(left) == 3:
+                spec_x, spec_y = get_coord(left[1:])
+                self.input_move(f'{left[0]}{right}', player, spec_x, spec_y)
+            elif len(left) == 2:
+                spec_x, spec_y = get_coord(left)
+                self.input_move(right, player, spec_x, spec_y)
+                print(right)
+        elif 'x' in move:
+            left, right = move.split('x')
+            if len(left) == 3:
+                spec_x, spec_y = get_coord(left[1:])
+                self.input_move(f'{left[0]}x{right}', player, spec_x, spec_y)
+            elif len(left) == 2:
+                spec_x, spec_y = get_coord(left)
+                self.input_move(right, player, spec_x, spec_y)
 
 f = field()
 
@@ -382,5 +447,5 @@ f = field()
 
 # f.draw()
 # f.play()
-with open('chess_save.txt', 'r') as File:
-    f.readfile(File)
+with open('chess_save_fullformat.txt', 'r') as File:
+    f.readfile(File, fullform=True)
