@@ -1,4 +1,5 @@
 moved = False
+import copy
 
 def get_coord(coord):
     return (ord(coord[0])-97, int(coord[1])-1)  
@@ -125,7 +126,7 @@ class field:
         if spec_x != None:
             newmoves = []
             for i in moves:
-                if ord(spec_x)-97 == i[1]:
+                if spec_x == i[1]:
                     newmoves.append(i)
             moves = newmoves
         elif spec_y != None:
@@ -163,7 +164,7 @@ class field:
         if spec_x != None:
             newmoves = []
             for i in moves:
-                if ord(spec_x)-97 == i[1]:
+                if spec_x == i[1]:
                     newmoves.append(i)
             moves = newmoves
             print(moves)
@@ -182,13 +183,22 @@ class field:
     def input_move(self, line, player):
         spec_x, spec_y = None, None
         kill = False
+        if '+' in line:
+            line = line.replace('+', '')
         if 'x' in line:
             line = line.replace('x', '')
             kill = True
             print(':::::', line, kill)
-        if len(line) == 4:
+        if len(line) == 3 and line[0].lower() == line[0]:
+            if GetType(line[0]) == 'str':
+                spec_x = ord(line[0])-97
+            elif GetType(line[0]) == 'int':
+                spec_y == line[0]
+            newline = line[1:]
+            line = newline
+        elif len(line) == 4:
             if GetType(line[1]) == 'str':
-                spec_x = line[1]
+                spec_x = ord(line[1])-97
             elif GetType(line[1]) == 'int':
                 spec_y == line[1]
             newline = line[:1] + line[2:]
@@ -303,6 +313,62 @@ class field:
             return True
         return False
 
+    def readfile(self, file):
+        lines = file.readlines()
+        curmove = 0
+        c = 0
+        player = 1
+        cache = []
+        cache.append(copy.deepcopy(self.arr))
+        self.draw()
+        print(f'Ход №{0}')
+        while True:
+            print('n - движение вперед, p - движение назад, play - начать игру с этого момента, exit - выход')
+            inp = input()
+            if inp == 'exit':
+                break
+            elif inp == 'n':
+                print('!!', curmove)
+                nmove, move1, move2 = lines[curmove].split()
+                print(move1, move2)
+                if player == 1:
+                    f.input_move(move1, player)
+                    player = 2
+                else:
+                    f.input_move(move2, player)
+                    player = 1
+                c += 1
+                self.draw()
+                print('C', c)
+                if c % 2 == 1:
+                    curmove += 1
+                print(f'Ход №{curmove}')
+                cache.append(copy.deepcopy(self.arr))
+            elif inp == 'p':
+                
+                if c % 2 == 1:
+                    curmove -= 1
+                c -= 1
+                for i in cache:
+                    print(i)
+                    print('---------------------------')
+                print(len(cache))
+                print('C =',c)
+                self.arr = copy.deepcopy(cache[c])
+                f.draw()
+                print('C', c)
+                print(f'Ход №{curmove}')
+                if player == 1:
+                    player = 2
+                else:
+                    player = 1
+
+
+                
+                
+        
+
+
 
 
 f = field()
@@ -314,5 +380,7 @@ f = field()
 # f.input_move('Qh5', 1)
 # f.input_move('Kf7', 2)
 
-f.draw()
-f.play()
+# f.draw()
+# f.play()
+with open('chess_save.txt', 'r') as File:
+    f.readfile(File)
