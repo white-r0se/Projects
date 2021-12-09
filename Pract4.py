@@ -98,10 +98,8 @@ class field:
                 break
 
     def find_diagonal(self, find, x, y, spec_x, spec_y):
-        print('find_diag', y, x, find)
         i, j = y+1, x+1
         while i <= 7 and j <= 7:
-            print('+++++',self.arr[i][j], i, j)
             if self.arr[i][j] == '.':
                 pass
             elif self.arr[i][j] == find and (spec_x == None or spec_x == j) and (spec_y == None or spec_y == i):
@@ -111,7 +109,6 @@ class field:
             i, j = i+1, j+1
         i, j = y+1, x-1
         while i <= 7 and j >= 0:
-            print('+++++',self.arr[i][j], i, j)
             if self.arr[i][j] == '.':
                 pass
             elif self.arr[i][j] == find and (spec_x == None or spec_x == j) and (spec_y == None or spec_y == i):
@@ -121,7 +118,6 @@ class field:
             i, j = i+1, j-1
         i, j = y-1, x+1
         while i >= 0 and j <= 7:
-            print('+++++',self.arr[i][j], i, j)
             if self.arr[i][j] == '.':
                 pass
             elif self.arr[i][j] == find and (spec_x == None or spec_x == j) and (spec_y == None or spec_y == i):
@@ -131,7 +127,6 @@ class field:
             i, j = i-1, j+1
         i, j = y-1, x-1
         while i >= 0 and j >= 0:
-            print('-----',self.arr[i][j], i, j)
             if self.arr[i][j] == '.':
                 pass
             elif self.arr[i][j] == find and (spec_x == None or spec_x == j) and (spec_y == None or spec_y == i):
@@ -186,7 +181,6 @@ class field:
                 if spec_x == i[1]:
                     newmoves.append(i)
             moves = newmoves
-            print(moves)
         elif spec_y != None:
             newmoves = []
             for i in moves:
@@ -200,14 +194,12 @@ class field:
             except IndexError: pass
         
     def input_move(self, line, player, spec_x=None, spec_y=None):
-        print(line, player, spec_x, spec_y)
         kill = False
         if '+' in line:
             line = line.replace('+', '')
         if 'x' in line:
             line = line.replace('x', '')
             kill = True
-            print(':::::', line, kill)
         if '!' in line:
             line = line.replace('!', '')
         if line == 'O-O':
@@ -242,7 +234,6 @@ class field:
                 spec_y == line[1]
             newline = line[:1] + line[2:]
             line = newline
-        print('speeeec', spec_x)
         if len(line) == 2:
             x, y = get_coord(line)
             if kill == False and self.arr[y][x] != '.':
@@ -250,8 +241,6 @@ class field:
             if player == 1:
                 if kill == False:
                     if 0 <= y-2 <= 7:
-                        print(y == 3, self.arr[y-2][x] == 'P', (spec_x == None or spec_x == x), (spec_y == None or spec_y == y-2))
-                        print(y, spec_y)
                         if y == 3 and self.arr[y-2][x] == 'P' and (spec_x == None or spec_x == x) and (spec_y == None or spec_y == y-2):
                             self.move(x, y-2, x, y)
                         elif self.arr[y-1][x] == 'P' and (spec_x == None or spec_x == x) and (spec_y == None or spec_y == y-1):
@@ -344,7 +333,7 @@ class field:
             if self.check_win():
                 print('Число ходов:', int(countmoves/2+0.5))
                 break
-            print(self.record)
+
     
     def check_win(self):
         player1win, player2win = True, True
@@ -401,10 +390,6 @@ class field:
                 self.draw()
                 print('C', c)
                 print(f'Ход №{curmove+1}')
-                if player == 2:
-                    print(move1)
-                else:
-                    print(move2)
                 if c % 2 == 0:
                     curmove += 1
                 cache.append(copy.deepcopy(self.arr))
@@ -412,26 +397,17 @@ class field:
                 if c % 2 == 0:
                     curmove -= 1
                 c -= 1
-                for i in cache:
-                    print(i)
-                    print('---------------------------')
-                print(len(cache))
-                print('C =',c)
                 self.arr = copy.deepcopy(cache[c])
                 f.draw()
-                print('C', c)
                 print(f'Ход №{curmove+1}')
                 if player == 1:
                     player = 2
-                    print('!!!!!!!!!!!!!!!!!!!')
-                    self.record[-1][1] = None
+                    if fullform == False:
+                        self.record[-1][1] = None
                 else:
-                    print('???????????')
                     player = 1
-                    
-                    print(self.record)
-                    del self.record[-1]
-                    print(self.record)
+                    if fullform == False:
+                        del self.record[-1]
             elif inp == 'play':
                 self.play(player, c)
                 break
@@ -445,7 +421,6 @@ class field:
             elif len(left) == 2:
                 spec_x, spec_y = get_coord(left)
                 self.input_move(right, player, spec_x, spec_y)
-                print(right)
         elif 'x' in move:
             left, right = move.split('x')
             if len(left) == 3:
@@ -460,8 +435,8 @@ f = field()
 # with open('chess_local_save.txt', 'r') as File:
 #     f.readfile(File)
 
-with open('chess_save_fullformat.txt', 'r') as File:
-    f.readfile(File, fullform=True)
+# with open('chess_save_fullformat.txt', 'r') as File:
+#     f.readfile(File, fullform=True)
 
-# with open('chess_save2.txt', 'r') as File:
-#     f.readfile(File)
+with open('chess_save2.txt', 'r') as File:
+    f.readfile(File)

@@ -1,4 +1,3 @@
-
 class field:
     def __init__(self) -> None:
         self.arr = [[' ' for j in range(9)] for i in range(9)]

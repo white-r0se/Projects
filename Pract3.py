@@ -379,7 +379,6 @@ class TablePickle(Table):
         if auto_detect_type:
             self.detect_type()
             
-
 class TableTXT(Table):
     def save_table(self, name='Table.txt'):
         with open(name, 'w') as newfile:
