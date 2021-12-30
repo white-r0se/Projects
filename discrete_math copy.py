@@ -6,7 +6,9 @@ class graph:
         self.matrix = [[0 for i in range(edges)] for j in range(vertices)]
         print(f'Введите через пробел номера вершин откуда и куда идет дорога')
         
-        # Создание матрицы инцидентности 
+        # Создание матрицы инцидентности и определение весов ребер
+        roads = []
+        self.weight = {}
         for i in range(edges):
             a1, a2 = map(int, input(f'{i+1} дорога:').split())
             if a1 == a2:
@@ -14,21 +16,12 @@ class graph:
             else:
                 self.matrix[a1-1][i] = 1
                 self.matrix[a2-1][i] = -1
-                
-        # Случайное определение времени прохождения дорог
-        self.weight = {}
-        roads = []
-        for i in range(edges):
-            for j in range(len(self.matrix)):
-                if self.matrix[j][i] == 1:
-                    a1 = j
-                elif self.matrix[j][i] == -1:
-                    a2 = j
             roads.append((a1, a2))
             if (a2, a1) in roads:
                 self.weight[i] = self.weight[roads.index((a2, a1))]
             else:
                 self.weight[i] = random.randint(1, 30)
+                
         
     def search_rec(self, curvertice, find, curtime, cache) -> None:
         '''Рекурсивный поиск вершины'''
