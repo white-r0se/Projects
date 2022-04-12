@@ -1,1 +1,8 @@
-print([0]*3)
+for i in 'awd\'':
+    if i == '\'':
+        print('HELLLO')
+    
+
+
+
+    

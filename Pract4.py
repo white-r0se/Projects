@@ -334,7 +334,6 @@ class field:
                 print('Число ходов:', int(countmoves/2+0.5))
                 break
 
-    
     def check_win(self):
         player1win, player2win = True, True
         for line in self.arr:
@@ -432,11 +431,13 @@ class field:
 
 f = field()
 
+# f.play()
+
 # with open('chess_local_save.txt', 'r') as File:
 #     f.readfile(File)
 
-with open('chess_save_fullformat.txt', 'r') as File:
-    f.readfile(File, fullform=True)
+# with open('chess_save_fullformat.txt', 'r') as File:
+#     f.readfile(File, fullform=True)
 
-# with open('chess_save2.txt', 'r') as File:
-#     f.readfile(File)
+with open('chess_save2.txt', 'r') as File:
+    f.readfile(File)

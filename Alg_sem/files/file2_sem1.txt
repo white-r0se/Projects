@@ -1,0 +1,4 @@
+Coke:1$
+Baikal:1.5$
+Wine:9$
+Cheeseburger:2$

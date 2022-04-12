@@ -1,0 +1,7 @@
+Fries:0.7$
+Coke:1$
+Baikal:1.5$
+Cheeseburger:2$
+Chips:2$
+Chebupizza:2$
+Wine:9$
