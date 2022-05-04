@@ -11,7 +11,7 @@ n = len(matrix)
 
 # DRAW
 
-def polygon(sides, radius=1, rotation=0, translation=None):
+def Polygon(sides, radius=1, rotation=0, translation=None):
     one_segment = math.pi * 2 / sides
     points = [
         (math.sin(one_segment * i + rotation) * radius,
@@ -23,7 +23,7 @@ def polygon(sides, radius=1, rotation=0, translation=None):
     return points
 
 x, y = [], []
-for point in polygon(n):
+for point in Polygon(n):
     px, py = point
     x.append(px)
     y.append(py)
@@ -42,7 +42,7 @@ plt.show()
 
 all_roads = []
 
-def recursion_search(cur_ver, cur_time, cache):
+def Recursion_search(cur_ver, cur_time, cache):
     global n
     global all_roads
     if len(cache) == n:
@@ -51,9 +51,9 @@ def recursion_search(cur_ver, cur_time, cache):
     if matrix[cur_ver] != [0]*n:
         for i in range(n):
             if matrix[cur_ver][i] != 0 and not(i in cache):
-                recursion_search(i, cur_time+matrix[cur_ver][i], cache+[i])
+                Recursion_search(i, cur_time+matrix[cur_ver][i], cache+[i])
             
-recursion_search(0, 0, [0])
+Recursion_search(0, 0, [0])
 print('Кратчайший путь (с помощью полного перебора):', min(all_roads))    
         
 # Nearest neigbour Algorithm 
@@ -76,9 +76,9 @@ while len(nearest_neighbour_roads) != n-1:
         print('Sorry')
         break
 
-print('Кратчайший путь (с помощью алгоритма близжайшего соседа):', sum(nearest_neighbour_roads))
+print('Кратчайший путь (с помощью алгоритма ближайшего соседа):', sum(nearest_neighbour_roads))
 
-#            No bifurcations?
+#     No ant colony optimization?
 #⠀⣞⢽⢪⢣⢣⢣⢫⡺⡵⣝⡮⣗⢷⢽⢽⢽⣮⡷⡽⣜⣜⢮⢺⣜⢷⢽⢝⡽⣝
 #⠸⡸⠜⠕⠕⠁⢁⢇⢏⢽⢺⣪⡳⡝⣎⣏⢯⢞⡿⣟⣷⣳⢯⡷⣽⢽⢯⣳⣫⠇
 #⠀⠀⢀⢀⢄⢬⢪⡪⡎⣆⡈⠚⠜⠕⠇⠗⠝⢕⢯⢫⣞⣯⣿⣻⡽⣏⢗⣗⠏⠀
@@ -100,7 +100,7 @@ a, b = 1, 1 # параметры, определяющие важность ве
 k = 1.5 # параметр, определяющий интенсивность следа феромона
 evaporation_time = 3/5 # коэффицент скорости испарения феромона
  
-def pheromone_update(cache) -> None:
+def Pheromone_update(cache) -> None:
     global pheromone_matrix
     for i in range(n):
         for j in range(n):
@@ -112,11 +112,11 @@ def pheromone_update(cache) -> None:
         pheromone_matrix[ver1][ver2] = k/matrix[ver1][ver2]
 
 
-def ant(cur_ver, cur_time, cache):
+def Ant(cur_ver, cur_time, cache):
     if len(cache) == n:
         global min_road
         min_road = min(min_road, cur_time)
-        pheromone_update(cache)
+        Pheromone_update(cache)
         return None
     if matrix[cur_ver] != [0]*n:
         p = [0]*n
@@ -125,10 +125,11 @@ def ant(cur_ver, cur_time, cache):
                 p[i] = (pheromone_matrix[cur_ver][i]**a + 1/matrix[cur_ver][i]**b) / sum([pheromone_matrix[cur_ver][l]**a + 1/matrix[cur_ver][l]**b for l in range(n) if matrix[cur_ver][l] != 0])
         if p == [0]*n:
             return None
-        print(p)
         new_ver = random.choices([i for i in range(n)], weights=p)[0]
-        ant(new_ver, cur_time + matrix[cur_ver][new_ver], cache + [new_ver])
+        Ant(new_ver, cur_time + matrix[cur_ver][new_ver], cache + [new_ver])
 
 for i in range(10):
-    ant(0, 0, [0])
+    Ant(0, 0, [0])
 print(min_road)
+
+# 
