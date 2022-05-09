@@ -6,7 +6,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 # matrix = [[0, 2, 0, 0, 0], [2, 0, 3, 0, 0], [0, 3, 0, 4, 1], [0, 0, 4, 0, 2], [0, 0, 1, 2, 0]]
-matrix = [[0, 3, 0, 0, 0, 1], [3, 0, 4, 0, 0, 0], [0, 4, 0, 1, 0, 0], [0, 0, 1, 0, 10, 3], [0, 0, 0, 10, 0, 2], [1, 0, 0, 3, 2, 0]]
+# matrix = [[0, 3, 0, 0, 0, 4], [3, 0, 4, 8, 0, 0], [0, 4, 0, 40, 0, 1], [0, 8, 40, 0, 18, 10], [0, 0, 0, 18, 0, 2], [4, 0, 1, 10, 2, 0]]
+matrix = [[0, 10, 12, 8, 9, 11], [21, 0, 7, 5, 21, 3], [13, 19, 0, 13, 4, 15], [15, 20, 14, 0, 10, 10], [7, 15, 9, 12, 0, 23], [16, 3, 11, 8, 17, 0]]
 n = len(matrix)
 
 # DRAW
@@ -52,31 +53,40 @@ def Recursion_search(cur_ver, cur_time, cache):
         for i in range(n):
             if matrix[cur_ver][i] != 0 and not(i in cache):
                 Recursion_search(i, cur_time+matrix[cur_ver][i], cache+[i])
-            
-Recursion_search(0, 0, [0])
-print('Кратчайший путь (с помощью полного перебора):', min(all_roads))    
+
+for start in range(n):            
+    Recursion_search(start, 0, [start])
+print('Полный перебор:', min(all_roads))    
         
 # Nearest neigbour Algorithm 
 
-nearest_neighbour_roads = []
-cur_ver = 0
-cache = [0]
+roads = []
+for start in range(n):
+    nearest_neighbour_roads = []
+    cur_ver = start
+    cache = [start]
+    count = 0
+    while len(nearest_neighbour_roads) != n-1:
+        if matrix[cur_ver] != [0]*n:
+            try:
+                min_road = min([matrix[cur_ver][i] for i in range(n) if (matrix[cur_ver][i] != 0 and not(i in cache))])
+            except ValueError:
+                # broken path
+                nearest_neighbour_roads = [10000]
+                break
+            i = matrix[cur_ver].index(min_road)
+            if not(i in cache):
+                nearest_neighbour_roads.append(matrix[cur_ver][i])
+                cur_ver = i
+                cache.append(cur_ver)
+        count += 1
+        if count > 100:
+            # broken path
+            nearest_neighbour_roads = [10000]
+            break
+    roads.append(sum(nearest_neighbour_roads))
 
-count = 0
-while len(nearest_neighbour_roads) != n-1:
-    if matrix[cur_ver] != [0]*n:
-        min_road = min([matrix[cur_ver][i] for i in range(n) if (matrix[cur_ver][i] != 0 and not(i in cache))])
-        i = matrix[cur_ver].index(min_road)
-        if not(i in cache):
-            nearest_neighbour_roads.append(matrix[cur_ver][i])
-            cur_ver = i
-            cache.append(cur_ver)
-    count += 1
-    if count > 100:
-        print('Sorry')
-        break
-
-print('Кратчайший путь (с помощью алгоритма ближайшего соседа):', sum(nearest_neighbour_roads))
+print('Алгоритм ближайшего соседа:', min(roads))
 
 #     No ant colony optimization?
 #⠀⣞⢽⢪⢣⢣⢣⢫⡺⡵⣝⡮⣗⢷⢽⢽⢽⣮⡷⡽⣜⣜⢮⢺⣜⢷⢽⢝⡽⣝
@@ -128,8 +138,44 @@ def Ant(cur_ver, cur_time, cache):
         new_ver = random.choices([i for i in range(n)], weights=p)[0]
         Ant(new_ver, cur_time + matrix[cur_ver][new_ver], cache + [new_ver])
 
-for i in range(10):
-    Ant(0, 0, [0])
-print(min_road)
+for start in range(n):
+    for i in range(15):
+        Ant(start, 0, [start])
+print('Ant Algorithm:', min_road)
 
-# 
+# метод включения близж города
+
+roads = []
+for start in range(n): 
+    nearest_neighbour_roads = []
+    nearest_neighbour_vers = [0]
+    cache_vers = [0]
+
+    count = 0
+    while len(nearest_neighbour_roads) != n-1:
+        challenger_vers = []
+        challenger_roads = []
+        for cur_ver in [cache_vers[-1]] + [cache_vers[0]]:
+            if matrix[cur_ver] != [0]*n:
+                
+                vers = [i for i in range(len(matrix[cur_ver])) if matrix[cur_ver][i] != 0]
+                for ver in vers:
+                    if ver in cache_vers:
+                        pass
+                    else:
+                        challenger_roads.append(min([matrix[cur_ver][i] for i in range(n) if (matrix[cur_ver][i] != 0 and not(i in cache_vers))]))
+                        challenger_vers.append(matrix[cur_ver].index(challenger_roads[-1]))
+
+        i = challenger_roads.index(min(challenger_roads))        
+        nearest_neighbour_roads.append(challenger_roads[i])
+        cache_vers.append(challenger_vers[i])
+
+        count += 1
+        if count > 100:
+            # broken path
+            nearest_neighbour_roads = [10000]
+            break
+
+    roads.append(sum(nearest_neighbour_roads))
+
+print('Алгоритм включения ближайшего соседа:', min(roads))
