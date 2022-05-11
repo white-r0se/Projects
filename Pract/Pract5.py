@@ -47,15 +47,16 @@ def Recursion_search(cur_ver, cur_time, cache):
     global n
     global all_roads
     if len(cache) == n:
-        all_roads.append(cur_time)
+        if cur_ver == cache[-1]:
+            all_roads.append(cur_time)
         return None
     if matrix[cur_ver] != [0]*n:
         for i in range(n):
-            if matrix[cur_ver][i] != 0 and not(i in cache):
+            if matrix[cur_ver][i] != 0 and not(i in cache[1:]):
                 Recursion_search(i, cur_time+matrix[cur_ver][i], cache+[i])
 
-for start in range(n):            
-    Recursion_search(start, 0, [start])
+            
+Recursion_search(0, 0, [0])
 print('Полный перебор:', min(all_roads))    
         
 # Nearest neigbour Algorithm 
@@ -139,7 +140,7 @@ def Ant(cur_ver, cur_time, cache):
         Ant(new_ver, cur_time + matrix[cur_ver][new_ver], cache + [new_ver])
 
 for start in range(n):
-    for i in range(15):
+    for i in range(20):
         Ant(start, 0, [start])
 print('Ant Algorithm:', min_road)
 
@@ -179,3 +180,41 @@ for start in range(n):
     roads.append(sum(nearest_neighbour_roads))
 
 print('Алгоритм включения ближайшего соседа:', min(roads))
+
+# dynamic algorithm
+
+def findCheapest(i, mask):
+    if dp[i][mask] != inf:
+        return dp[i][mask] 
+    for j in range(n):
+        if l[i][j] != 0 and ((mask >> j) & 1 == 1):  
+            dp[i][mask] = min(dp[i][mask], findCheapest(j, mask - 2**j) + l[i][j])
+    return dp[i][mask]
+
+def findWay():
+    i = 0
+    mask = 2**n - 1
+    way.append(0)
+    while mask != 0:
+        for j in range(n):
+            if l[i][j] != 0 and ((mask >> j) & 1 == 1) and (dp[i][mask] == dp[j][mask - 2**j] + l[i][j]): 
+                way.append(j)
+                i = j
+                mask = mask - 2**j
+                continue
+    print(way)
+
+inf = math.inf
+# n = 5
+dp = [[inf] * (2**n) for i in range(n)]
+# l =[[0,5,9,0,0],
+#     [5,0,0,7,3],
+#     [9,0,0,4,5],
+#     [0,7,4,0,6],
+#     [0,3,5,6,0]]
+l = matrix
+way = []
+dp[0][0] = 0
+ans = findCheapest(0, 2**n - 1)
+findWay()
+
