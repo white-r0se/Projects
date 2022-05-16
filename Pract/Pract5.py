@@ -187,5 +187,17 @@ for mask in range(2**n):
 
 print('Dynamic algorithm:', dp[2**n - 1][0])
 
-
-
+def findWay():    
+    way = []
+    i = 0
+    mask = 2**n - 1
+    way.append(0)
+    while mask != 0:
+        for j in range(n):
+            if matrix[j][i] != 0 and (((mask >> j) & 1 == 1) or len(way) == n) and (dp[mask][i] == dp[mask ^ 2**i][j] + matrix[j][i]): 
+                way.append(j)
+                mask = mask ^ 2**i
+                i = j
+    return(way[::-1])
+    
+print(findWay())
