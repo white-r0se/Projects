@@ -2,10 +2,9 @@ import math
 import random
 from matplotlib import pyplot as plt
 
-# matrix = [[0, 2, 0, 0, 0], [2, 0, 3, 0, 0], [0, 3, 0, 4, 1], [0, 0, 4, 0, 2], [0, 0, 1, 2, 0]]
-# matrix = [[0, 3, 0, 0, 0, 4], [3, 0, 4, 8, 0, 0], [0, 4, 0, 40, 0, 1], [0, 8, 40, 0, 18, 10], [0, 0, 0, 18, 0, 2], [4, 0, 1, 10, 2, 0]]
 matrix = [[0, 10, 12, 8, 9, 11], [21, 0, 7, 5, 21, 3], [13, 19, 0, 13, 4, 15], [15, 20, 14, 0, 10, 10], [7, 15, 9, 12, 0, 23], [16, 3, 11, 8, 17, 0]]
 n = len(matrix)
+inf = math.inf
 
 # Draw
 
@@ -51,13 +50,10 @@ def Recursion_search(cur_ver, cur_time, cache):
     if matrix[cur_ver] != [0]*n:
         for i in range(n):
             if matrix[cur_ver][i] != 0 and (not(i in cache) or (len(cache) == n and i == cache[0])):
-                Recursion_search(i, cur_time+matrix[cur_ver][i], cache+[i])
-
+                Recursion_search(i, cur_time + matrix[cur_ver][i], cache + [i])
 
 Recursion_search(0, 0, [0])
-
 print('All permutations:', min(roads))    
-
 
 # Nearest neigbour Algorithm 
 
@@ -72,7 +68,7 @@ while len(cache) != n+1:
             min_road = min([matrix[cur_ver][i] for i in range(n) if matrix[cur_ver][i] != 0 and (not(i in cache) or (len(cache) == n and i == cache[0]))])
         except ValueError:
             # broken path
-            nearest_neighbour_roads = [10000]
+            nearest_neighbour_roads = [inf]
             break
         i = matrix[cur_ver].index(min_road)
         if (not(i in cache) or (len(cache) == n and i == cache[0])):
@@ -82,7 +78,7 @@ while len(cache) != n+1:
     count += 1
     if count > 100:
         # broken path
-        nearest_neighbour_roads = [10000]
+        nearest_neighbour_roads = [inf]
         break
 
 print('Nearest neigbour Algorithm:', sum(nearest_neighbour_roads))
@@ -166,7 +162,7 @@ while len(cache) != n:
     count += 1
     if count > 100:
         # broken path
-        nearest_neighbour_roads = [10000]
+        nearest_neighbour_roads = [inf]
         break
 
 # closing the loop
